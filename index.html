@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蜗牛爬树动画演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #98FB98 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .problem-description {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+
+        .animation-area {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            transition: background 1s ease-in-out;
+        }
+
+        .animation-area.day-bg {
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+        }
+
+        .animation-area.night-bg {
+            background: linear-gradient(to bottom, #191970 0%, #2F4F4F 100%);
+        }
+
+        .tree {
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 450px;
+            background: linear-gradient(to right, #8B4513, #A0522D);
+            border-radius: 30px 30px 0 0;
+            transition: all 0.5s ease;
+        }
+
+        .tree::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #228B22, #32CD32);
+            border-radius: 50%;
+            transition: all 0.5s ease;
+        }
+
+        .night-bg .tree {
+            background: linear-gradient(to right, #654321, #8B4513);
+        }
+
+        .night-bg .tree::before {
+            background: radial-gradient(circle, #006400, #228B22);
+        }
+
+        .height-markers {
+            position: absolute;
+            left: calc(50% - 120px);
+            bottom: 0;
+            height: 450px;
+        }
+
+        .height-marker {
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background: #666;
+            left: 0;
+        }
+
+        .height-label {
+            position: absolute;
+            left: -30px;
+            top: -10px;
+            font-size: 14px;
+            color: #333;
+            font-weight: bold;
+            transition: color 0.5s ease;
+        }
+
+        .night-bg .height-label {
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .snail {
+            position: absolute;
+            left: calc(50% + 35px);
+            bottom: 0;
+            width: 40px;
+            height: 30px;
+            transition: bottom 0.5s ease-in-out;
+            /* 蜗牛底部对齐刻度线 */
+        }
+
+        .snail-body {
+            width: 100%;
+            height: 100%;
+            background: #DEB887;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .night-bg .snail-body {
+            box-shadow: 0 0 10px rgba(222, 184, 135, 0.8);
+        }
+
+        .snail-shell {
+            position: absolute;
+            top: -5px;
+            right: 5px;
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle, #8B4513, #D2691E);
+            border-radius: 50%;
+            border: 2px solid #654321;
+        }
+
+        .snail-shell::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15px;
+            height: 15px;
+            background: #654321;
+            border-radius: 50%;
+        }
+
+        .snail-eyes {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }
+
+        .snail-eye {
+            width: 3px;
+            height: 8px;
+            background: #333;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            display: inline-block;
+            margin-right: 2px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ecf0f1;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .progress {
+            background: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .progress-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .day-night-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            transition: all 0.5s ease;
+        }
+
+        .day {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .night {
+            background: linear-gradient(45deg, #191970, #000080);
+            box-shadow: 0 0 20px rgba(25, 25, 112, 0.6);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .snail.climbing {
+            animation: bounce 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐌 蜗牛爬树动画演示</h1>
+        
+        <div class="problem-description">
+            <h3>问题描述：</h3>
+            <p>蜗牛爬树，树高 <strong>9米</strong>，蜗牛白天爬 <strong>3米</strong>，晚上滑落 <strong>1米</strong>，问几天能爬到树顶？</p>
+        </div>
+
+        <div class="animation-area day-bg">
+            <div class="day-night-indicator day" id="dayNightIndicator">☀️</div>
+            
+            <div class="height-markers" id="heightMarkers"></div>
+            
+            <div class="tree"></div>
+            
+            <div class="snail" id="snail">
+                <div class="snail-body">
+                    <div class="snail-shell"></div>
+                    <div class="snail-eyes">
+                        <div class="snail-eye"></div>
+                        <div class="snail-eye"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="startAnimation()">开始演示</button>
+            <button class="btn btn-secondary" onclick="resetAnimation()">重置</button>
+        </div>
+
+        <div class="status" id="status">
+            点击"开始演示"查看蜗牛爬树过程
+        </div>
+
+        <div class="progress" id="progress">
+            <div class="progress-item">
+                <span>当前天数：</span>
+                <span id="currentDay">0</span>
+            </div>
+            <div class="progress-item">
+                <span>当前高度：</span>
+                <span id="currentHeight">0米</span>
+            </div>
+            <div class="progress-item">
+                <span>白天爬升：</span>
+                <span id="dayClimb">0米</span>
+            </div>
+            <div class="progress-item">
+                <span>夜间滑落：</span>
+                <span id="nightFall">0米</span>
+            </div>
+        </div>
+
+        <div class="solution-section" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+            <h3 style="color: #28a745; margin-bottom: 15px;">📚 解题思路与计算方法</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">🔍 关键理解点：</h4>
+                <ul style="margin-left: 20px; line-height: 1.6;">
+                    <li><strong>临界条件</strong>：当蜗牛白天爬到或超过树顶时，就不会再滑落</li>
+                    <li><strong>净进展</strong>：除了最后一天，每天的净进展 = 白天爬升 - 夜晚滑落</li>
+                    <li><strong>最后一天</strong>：只需考虑白天的爬升，不会再滑落</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">📐 通用计算公式：</h4>
+                <div style="background: #e9ecef; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace;">
+                    <p><strong>设：</strong></p>
+                    <p>• H = 树高（米）</p>
+                    <p>• D = 白天爬升距离（米）</p>
+                    <p>• N = 夜晚滑落距离（米）</p>
+                    <p>• 净进展 = D - N（米/天）</p>
+                    <br>
+                    <p><strong>计算步骤：</strong></p>
+                    <p>1. 最后一天需要爬升的距离 = D</p>
+                    <p>2. 前面几天需要爬升的总距离 = H - D</p>
+                    <p>3. 需要的天数 = ⌈(H - D) ÷ (D - N)⌉ + 1</p>
+                    <p style="color: #6c757d;">（⌈⌉表示向上取整）</p>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">💡 本题计算过程：</h4>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 3px solid #ffc107;">
+                    <p><strong>已知：</strong>H = 9米，D = 3米，N = 1米</p>
+                    <br>
+                    <p><strong>方法一：逐天计算</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>第1天：0→3米，夜晚3→2米</li>
+                        <li>第2天：2→5米，夜晚5→4米</li>
+                        <li>第3天：4→7米，夜晚7→6米</li>
+                        <li>第4天：6→9米，<span style="color: #28a745; font-weight: bold;">到达树顶！</span></li>
+                    </ul>
+                    <br>
+                    <p><strong>方法二：公式计算</strong></p>
+                    <p>• 净进展 = 3 - 1 = 2米/天</p>
+                    <p>• 最后一天前需爬：9 - 3 = 6米</p>
+                    <p>• 需要天数：⌈6 ÷ 2⌉ + 1 = 3 + 1 = <span style="color: #28a745; font-weight: bold;">4天</span></p>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">🎯 解题要点总结：</h4>
+                <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; border-left: 3px solid #17a2b8;">
+                    <ol style="margin-left: 20px; line-height: 1.6;">
+                        <li><strong>识别临界条件</strong>：到达树顶就不再滑落</li>
+                        <li><strong>分离最后一天</strong>：最后一天只需考虑白天爬升</li>
+                        <li><strong>计算净进展</strong>：前面每天的实际进展</li>
+                        <li><strong>应用公式</strong>：避免逐天枚举的繁琐</li>
+                        <li><strong>验证结果</strong>：可用逐天计算验证公式结果</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="practice-section" style="background: #f0f8ff; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #6f42c1;">
+            <h3 style="color: #6f42c1; margin-bottom: 15px;">🧮 举一反三 - 变式练习</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h5 style="color: #6f42c1; margin-bottom: 10px;">练习1</h5>
+                    <p style="font-size: 14px; margin-bottom: 8px;">树高12米，白天爬4米，夜晚滑2米</p>
+                    <details style="margin-top: 8px;">
+                        <summary style="cursor: pointer; color: #6f42c1;">点击查看答案</summary>
+                        <div style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
+                            <p>净进展 = 4 - 2 = 2米/天</p>
+                            <p>最后一天前需爬：12 - 4 = 8米</p>
+                            <p>天数：⌈8 ÷ 2⌉ + 1 = 4 + 1 = <strong>5天</strong></p>
+                        </div>
+                    </details>
+                </div>
+                
+                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h5 style="color: #6f42c1; margin-bottom: 10px;">练习2</h5>
+                    <p style="font-size: 14px; margin-bottom: 8px;">树高15米，白天爬5米，夜晚滑3米</p>
+                    <details style="margin-top: 8px;">
+                        <summary style="cursor: pointer; color: #6f42c1;">点击查看答案</summary>
+                        <div style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
+                            <p>净进展 = 5 - 3 = 2米/天</p>
+                            <p>最后一天前需爬：15 - 5 = 10米</p>
+                            <p>天数：⌈10 ÷ 2⌉ + 1 = 5 + 1 = <strong>6天</strong></p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div style="background: #e6f3ff; padding: 15px; border-radius: 8px; border-left: 3px solid #007bff;">
+                <h5 style="color: #007bff; margin-bottom: 10px;">🤔 思考题：特殊情况</h5>
+                <p style="margin-bottom: 10px;"><strong>情况1：</strong>如果白天爬升距离 ≥ 树高，答案是多少？</p>
+                <p style="margin-bottom: 10px;"><strong>情况2：</strong>如果白天爬升 ≤ 夜晚滑落，会发生什么？</p>
+                <details style="margin-top: 10px;">
+                    <summary style="cursor: pointer; color: #007bff;">点击查看分析</summary>
+                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px;">
+                        <p><strong>情况1：</strong>如果D ≥ H，第一天就能爬到树顶，答案是 <strong>1天</strong></p>
+                        <p><strong>情况2：</strong>如果D ≤ N，蜗牛永远无法爬到树顶（净进展≤0）</p>
+                        <p style="color: #6c757d; font-style: italic;">这提醒我们在解题前要先判断问题是否有解！</p>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentHeight = 0;
+        let currentDay = 0;
+        let isAnimating = false;
+        let animationTimeout;
+
+        const TREE_HEIGHT = 9;
+        const DAY_CLIMB = 3;
+        const NIGHT_FALL = 1;
+        const ANIMATION_HEIGHT = 450; // 动画区域的像素高度
+
+        function initializeHeightMarkers() {
+            const markersContainer = document.getElementById('heightMarkers');
+            markersContainer.innerHTML = '';
+            
+            for (let i = 0; i <= TREE_HEIGHT; i++) {
+                const marker = document.createElement('div');
+                marker.className = 'height-marker';
+                marker.style.bottom = `${(i / TREE_HEIGHT) * ANIMATION_HEIGHT}px`;
+                
+                const label = document.createElement('div');
+                label.className = 'height-label';
+                label.textContent = `${i}m`;
+                marker.appendChild(label);
+                
+                markersContainer.appendChild(marker);
+            }
+        }
+
+        function updateSnailPosition() {
+            const snail = document.getElementById('snail');
+            // 计算像素高度，蜗牛底部对齐刻度线
+            const pixelHeight = (currentHeight / TREE_HEIGHT) * ANIMATION_HEIGHT;
+            console.log(`更新蜗牛位置：${currentHeight}米 -> ${pixelHeight}px (底部对齐)`);
+            snail.style.bottom = `${pixelHeight}px`;
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function updateProgress() {
+            document.getElementById('currentDay').textContent = currentDay;
+            document.getElementById('currentHeight').textContent = `${currentHeight}米`;
+        }
+
+        function updateDayNightIndicator(isDay) {
+            const indicator = document.getElementById('dayNightIndicator');
+            const animationArea = document.querySelector('.animation-area');
+            
+            if (isDay) {
+                indicator.className = 'day-night-indicator day';
+                indicator.textContent = '☀️';
+                animationArea.className = 'animation-area day-bg';
+            } else {
+                indicator.className = 'day-night-indicator night';
+                indicator.textContent = '🌙';
+                animationArea.className = 'animation-area night-bg';
+            }
+        }
+
+        async function animateClimb(targetHeight, duration = 1000) {
+            return new Promise(resolve => {
+                const snail = document.getElementById('snail');
+                snail.classList.add('climbing');
+                
+                setTimeout(() => {
+                    currentHeight = targetHeight;
+                    updateSnailPosition();
+                    updateProgress();
+                    snail.classList.remove('climbing');
+                    resolve();
+                }, duration);
+            });
+        }
+
+        async function simulateDay() {
+            updateDayNightIndicator(true);
+            updateStatus(`第${currentDay}天白天：蜗牛开始爬升...`);
+            
+            document.getElementById('dayClimb').textContent = `+${DAY_CLIMB}米`;
+            document.getElementById('nightFall').textContent = '0米';
+            
+            const newHeight = Math.min(currentHeight + DAY_CLIMB, TREE_HEIGHT);
+            await animateClimb(newHeight, 1500);
+            
+            if (currentHeight >= TREE_HEIGHT) {
+                updateStatus(`🎉 恭喜！蜗牛在第${currentDay}天成功爬到了树顶！`);
+                return true; // 到达树顶
+            }
+            
+            updateStatus(`第${currentDay}天白天结束，蜗牛爬到了${currentHeight}米`);
+            return false;
+        }
+
+        async function simulateNight() {
+            if (currentHeight >= TREE_HEIGHT) return;
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            updateDayNightIndicator(false);
+            updateStatus(`第${currentDay}天夜晚：蜗牛开始滑落...`);
+            
+            document.getElementById('nightFall').textContent = `-${NIGHT_FALL}米`;
+            
+            const newHeight = Math.max(currentHeight - NIGHT_FALL, 0);
+            await animateClimb(newHeight, 1000);
+            
+            updateStatus(`第${currentDay}天夜晚结束，蜗牛滑落到${currentHeight}米`);
+        }
+
+        async function startAnimation() {
+            if (isAnimating) return;
+            
+            console.log('开始动画');
+            isAnimating = true;
+            const startBtn = document.querySelector('.btn-primary');
+            startBtn.disabled = true;
+            startBtn.textContent = '演示中...';
+            
+            // 重置状态但不调用resetAnimation，避免重复设置
+            currentHeight = 0;
+            currentDay = 0;
+            updateSnailPosition();
+            updateProgress();
+            updateDayNightIndicator(true);
+            updateStatus('动画开始...');
+            document.getElementById('dayClimb').textContent = '0米';
+            document.getElementById('nightFall').textContent = '0米';
+            
+            // 给一个小延迟让用户看到初始状态
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            while (currentHeight < TREE_HEIGHT && isAnimating) {
+                currentDay++;
+                console.log(`开始第${currentDay}天，当前高度：${currentHeight}米`);
+                
+                // 白天爬升
+                const reachedTop = await simulateDay();
+                if (reachedTop) break;
+                
+                // 夜晚滑落
+                await simulateNight();
+                
+                // 等待一下再进行下一天
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+            
+            isAnimating = false;
+            startBtn.disabled = false;
+            startBtn.textContent = '开始演示';
+            
+            // 显示最终答案
+            setTimeout(() => {
+                updateStatus(`📊 答案：蜗牛需要${currentDay}天才能爬到树顶！`);
+            }, 2000);
+        }
+
+        function resetAnimation() {
+            if (animationTimeout) {
+                clearTimeout(animationTimeout);
+            }
+            
+            isAnimating = false;
+            currentHeight = 0;
+            currentDay = 0;
+            
+            updateSnailPosition();
+            updateProgress();
+            updateDayNightIndicator(true); // 这会同时重置背景为白天模式
+            updateStatus('点击"开始演示"查看蜗牛爬树过程');
+            
+            document.getElementById('dayClimb').textContent = '0米';
+            document.getElementById('nightFall').textContent = '0米';
+            
+            const startBtn = document.querySelector('.btn-primary');
+            startBtn.disabled = false;
+            startBtn.textContent = '开始演示';
+        }
+
+        // 初始化
+        window.addEventListener('load', () => {
+            initializeHeightMarkers();
+            resetAnimation();
+        });
+    </script>
+</body>
+</html> 

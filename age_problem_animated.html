@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年龄问题动画演示 - 增强版</title>
+    <!-- 引入 Animate.css 动画库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .problem-description {
+            background: #f8f9fa;
+            padding: 25px;
+            border-left: 5px solid #4facfe;
+            margin: 20px;
+            border-radius: 10px;
+        }
+
+        .problem-description h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .problem-description p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #34495e;
+        }
+
+        .animation-area {
+            position: relative;
+            height: 450px;
+            margin: 20px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid #4facfe;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .character {
+            position: absolute;
+            bottom: 50px;
+            width: 60px;
+            text-align: center;
+            transition: all 0.8s ease;
+        }
+
+        .xiaohong {
+            left: 150px;
+            color: #FF1493;
+        }
+
+        .mama {
+            right: 150px;
+            color: #9370DB;
+        }
+
+        .character-figure {
+            width: 60px;
+            height: 80px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .xiaohong .character-figure {
+            background: linear-gradient(45deg, #FF69B4, #FFB6C1);
+        }
+
+        .mama .character-figure {
+            background: linear-gradient(45deg, #9370DB, #DDA0DD);
+        }
+
+        .character-figure::before {
+            content: '👧';
+            font-size: 24px;
+        }
+
+        .mama .character-figure::before {
+            content: '👩';
+        }
+
+        .age-label {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border: 2px solid currentColor;
+        }
+
+        .year-indicator {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #8B4513;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            border: 2px solid #FF8C00;
+        }
+
+        .ratio-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4);
+        }
+
+        .visual-bars {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-top: 30px;
+        }
+
+        .bar-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .bar-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 60px;
+        }
+
+        .age-bar {
+            height: 25px;
+            border-radius: 12px;
+            transition: all 0.8s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            min-width: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .xiaohong-bar {
+            background: linear-gradient(to right, #FF69B4, #FFB6C1);
+        }
+
+        .mama-bar {
+            background: linear-gradient(to right, #9370DB, #DDA0DD);
+        }
+
+        .age-bar-difference {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: rgba(72, 201, 176, 0.4);
+            border: 2px solid #48C9B0;
+            border-radius: 4px;
+            transition: all 0.8s ease;
+            z-index: 1;
+            border-left: 3px solid #48C9B0;
+            margin-left: 2px;
+        }
+
+        .age-bar-difference::after {
+            content: '年龄差24岁';
+            position: absolute;
+            left: 50%;
+            top: -22px;
+            transform: translateX(-50%);
+            background: rgba(72, 201, 176, 0.95);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 1px solid #48C9B0;
+        }
+
+        .age-bar-difference::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -8px;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 6px solid #48C9B0;
+            z-index: 3;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(45deg, #3d8bfe, #00d4fe);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: linear-gradient(45deg, #c0392b, #a93226);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            font-size: 18px;
+            min-width: 60px;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: linear-gradient(45deg, #218838, #1e9d8a);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        }
+
+        .status {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 25px;
+            margin: 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .highlight {
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 20px #FFD700 !important;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* 动画增强类 */
+        .animate-grow {
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        .animate-update {
+            animation: flash 0.6s ease-in-out;
+        }
+
+        .animate-celebrate {
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        .animate-step {
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        /* 自定义动画 */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 30px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        /* 解题方法区域 */
+        .solution-section {
+            margin: 30px 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #28a745;
+        }
+
+        .solution-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .calculation-demo {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.98);
+            border: 3px solid #9C27B0;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+        }
+
+        .calculation-demo.show {
+            display: block;
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .calculation-step {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .calculation-step.highlight {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            animation: pulse 1s ease-in-out;
+        }
+
+        .calculation-step.completed {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            opacity: 0.8;
+        }
+
+        /* 原理演示模态框 */
+        .demo-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .demo-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .principle-demo {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            animation: zoomIn 0.4s ease-out;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .animation-area {
+                height: 350px;
+            }
+            
+            .character {
+                width: 50px;
+            }
+            
+            .xiaohong {
+                left: 50px;
+            }
+            
+            .mama {
+                right: 50px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                min-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container animate__animated animate__fadeIn">
+        <div class="header animate__animated animate__slideInDown">
+            <h1>年龄问题动画演示</h1>
+            <p>小红今年2岁，妈妈今年26岁，几年后妈妈的年龄是小红的3倍？</p>
+        </div>
+
+        <div class="problem-description animate__animated animate__slideInLeft">
+            <h2>📋 问题描述</h2>
+            <p><strong>已知条件：</strong>小红现在2岁，妈妈现在26岁</p>
+            <p><strong>求解目标：</strong>几年后妈妈的年龄恰好是小红年龄的3倍？</p>
+            <p><strong>解题关键：</strong>年龄差始终保持不变（26-2=24岁）</p>
+        </div>
+
+        <div class="animation-area animate__animated animate__slideInRight">
+            <!-- 年份指示器 -->
+            <div class="year-indicator animate__animated animate__pulse" id="yearIndicator">当前：第0年</div>
+            
+            <!-- 倍数指示器 -->
+            <div class="ratio-indicator" id="ratioIndicator">倍数：13.0</div>
+
+            <!-- 小红角色 -->
+            <div class="character xiaohong animate__animated animate__bounceInLeft" id="xiaohong">
+                <div class="character-figure" id="xiaohongFigure"></div>
+                <div class="age-label" id="xiaohongAge">2岁</div>
+            </div>
+
+            <!-- 妈妈角色 -->
+            <div class="character mama animate__animated animate__bounceInRight" id="mama">
+                <div class="character-figure" id="mamaFigure"></div>
+                <div class="age-label" id="mamaAge">26岁</div>
+            </div>
+
+            <!-- 年龄可视化条形图 -->
+            <div class="visual-bars animate__animated animate__slideInUp">
+                <div class="bar-container">
+                    <div class="bar-label">小红:</div>
+                    <div class="age-bar xiaohong-bar" id="xiaohongBar" style="width: 16px;">
+                        2
+                        <div class="age-bar-difference" id="ageDifference" style="width: 192px; left: 16px;"></div>
+                    </div>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-label">妈妈:</div>
+                    <div class="age-bar mama-bar" id="mamaBar" style="width: 208px;">26</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls animate__animated animate__slideInUp">
+            <button class="btn btn-primary animate__animated animate__pulse animate__infinite" onclick="startAnimation()" id="startBtn">开始演示</button>
+            <button class="btn btn-success" onclick="stepForward()" id="stepBtn" disabled>+1</button>
+            <button class="btn btn-primary" onclick="showCalculationDemo()" id="calcBtn" style="background: linear-gradient(45deg, #9C27B0, #673AB7);">巧妙计算法</button>
+            <button class="btn btn-primary" onclick="showPrincipleDemo()" id="principleBtn" style="background: linear-gradient(45deg, #4CAF50, #45a049);">原理演示</button>
+            <button class="btn btn-secondary" onclick="resetAnimation()">重置</button>
+        </div>
+
+        <div class="status animate__animated animate__slideInUp" id="status">
+            点击"开始演示"查看自动演示，"+1"手动增加一年，"巧妙计算法"查看计算步骤，"原理演示"理解计算原理
+        </div>
+
+        <!-- 巧妙计算法演示 -->
+        <div class="calculation-demo" id="calculationDemo">
+            <h4 style="color: #9C27B0; margin-bottom: 15px;">💡 巧妙计算法</h4>
+            <div class="calculation-step" id="step1">
+                <strong>第一步：</strong>计算年龄差<br>
+                26 - 2 = 24岁
+            </div>
+            <div class="calculation-step" id="step2">
+                <strong>第二步：</strong>利用倍数关系<br>
+                24 ÷ (3 - 1) = 12岁
+            </div>
+            <div class="calculation-step" id="step3">
+                <strong>第三步：</strong>计算所需年数<br>
+                12 - 2 = 10年
+            </div>
+        </div>
+
+        <!-- 原理演示遮罩层 -->
+        <div class="demo-overlay" id="demoOverlay" onclick="closePrincipleDemo()"></div>
+        
+        <!-- 原理演示区域 -->
+        <div class="principle-demo" id="principleDemo">
+            <button class="close-btn" onclick="closePrincipleDemo()">&times;</button>
+            <div class="principle-title">🧠 巧妙计算法原理演示</div>
+            <div class="principle-explanation" id="principleExplanation">
+                通过年龄块的可视化，理解为什么用"年龄差÷(倍数-1)"就能快速求解
+            </div>
+            <div class="age-blocks-container" id="ageBlocksContainer">
+                <!-- 动态生成年龄块 -->
+            </div>
+        </div>
+
+        <div class="solution-section animate__animated animate__slideInUp">
+            <h3>📚 解题思路与计算方法</h3>
+            
+            <div style="margin: 20px 0;">
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">🔑 关键理解点</h4>
+                <ul style="line-height: 1.8; color: #34495e;">
+                    <li><strong>年龄差恒定：</strong>无论过多少年，妈妈和小红的年龄差始终是24岁</li>
+                    <li><strong>倍数关系变化：</strong>随着时间推移，年龄倍数会逐渐减小</li>
+                    <li><strong>目标倍数：</strong>当倍数正好等于3时，就是我们要找的答案</li>
+                </ul>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">💡 本题计算过程</h4>
+                
+                <div style="margin: 15px 0;">
+                    <strong style="color: #e74c3c;">方法一：逐年尝试法</strong>
+                    <ol style="line-height: 1.8; color: #34495e; margin-left: 20px;">
+                        <li>设x年后达到目标倍数关系</li>
+                        <li>小红年龄：2 + x，妈妈年龄：26 + x</li>
+                        <li>建立方程：(26 + x) = 3 × (2 + x)</li>
+                        <li>解方程：26 + x = 6 + 3x → 20 = 2x → x = 10</li>
+                        <li>验证：10年后小红12岁，妈妈36岁，36 ÷ 12 = 3 ✓</li>
+                    </ol>
+                </div>
+
+                <div style="margin: 15px 0;">
+                    <strong style="color: #9C27B0;">方法二：巧妙计算法</strong>
+                    <ol style="line-height: 1.8; color: #34495e; margin-left: 20px;">
+                        <li>年龄差：26 - 2 = 24岁（恒定不变）</li>
+                        <li>目标时刻：妈妈年龄 = 3 × 小红年龄</li>
+                        <li>此时小红年龄 = 24 ÷ (3 - 1) = 12岁</li>
+                        <li>所需年数：12 - 2 = 10年</li>
+                    </ol>
+                    <p style="color: #9C27B0; margin-top: 10px;"><strong>原理：</strong>当妈妈年龄是小红的3倍时，年龄差正好是小红年龄的2倍</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentYear = 0;
+        let isAnimating = false;
+        let animationInterval = null;
+        
+        // 常量定义
+        const XIAOHONG_INITIAL_AGE = 2;
+        const MAMA_INITIAL_AGE = 26;
+        const TARGET_RATIO = 3;
+
+        // 更新显示函数
+        function updateDisplay() {
+            const xiaohongAge = XIAOHONG_INITIAL_AGE + currentYear;
+            const mamaAge = MAMA_INITIAL_AGE + currentYear;
+            const ratio = mamaAge / xiaohongAge;
+
+            // 更新年份指示器
+            const yearIndicator = document.getElementById('yearIndicator');
+            yearIndicator.textContent = `当前：第${currentYear}年`;
+            yearIndicator.classList.add('animate__animated', 'animate__pulse');
+            setTimeout(() => {
+                yearIndicator.classList.remove('animate__animated', 'animate__pulse');
+            }, 600);
+
+            // 更新倍数指示器
+            const ratioIndicator = document.getElementById('ratioIndicator');
+            ratioIndicator.textContent = `倍数：${ratio.toFixed(1)}`;
+            ratioIndicator.classList.add('animate__animated', 'animate__flash');
+            setTimeout(() => {
+                ratioIndicator.classList.remove('animate__animated', 'animate__flash');
+            }, 600);
+
+            // 更新年龄标签
+            const xiaohongAgeElement = document.getElementById('xiaohongAge');
+            const mamaAgeElement = document.getElementById('mamaAge');
+            
+            xiaohongAgeElement.textContent = `${xiaohongAge}岁`;
+            mamaAgeElement.textContent = `${mamaAge}岁`;
+            
+            xiaohongAgeElement.classList.add('animate__animated', 'animate__bounceIn');
+            mamaAgeElement.classList.add('animate__animated', 'animate__bounceIn');
+            
+            setTimeout(() => {
+                xiaohongAgeElement.classList.remove('animate__animated', 'animate__bounceIn');
+                mamaAgeElement.classList.remove('animate__animated', 'animate__bounceIn');
+            }, 600);
+
+            // 更新角色高度（视觉成长效果）
+            const xiaohongElement = document.getElementById('xiaohongFigure');
+            const mamaElement = document.getElementById('mamaFigure');
+            
+            const initialHeightDifference = 40;
+            const xiaohongHeight = 80 + (currentYear * 3);
+            const mamaHeight = xiaohongHeight + initialHeightDifference;
+            
+            xiaohongElement.style.height = `${xiaohongHeight}px`;
+            mamaElement.style.height = `${mamaHeight}px`;
+
+            // 更新可视化条形图
+            const baseWidth = 8;
+            const xiaohongBarWidth = xiaohongAge * baseWidth;
+            const mamaBarWidth = mamaAge * baseWidth;
+            
+            const xiaohongBar = document.getElementById('xiaohongBar');
+            xiaohongBar.style.width = `${xiaohongBarWidth}px`;
+            
+            // 找到文本节点并更新年龄文字
+            for (let node of xiaohongBar.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                    node.textContent = xiaohongAge;
+                    break;
+                }
+            }
+            
+            document.getElementById('mamaBar').style.width = `${mamaBarWidth}px`;
+            document.getElementById('mamaBar').textContent = mamaAge;
+            
+            // 年龄差标识
+            const ageDifferenceElement = document.getElementById('ageDifference');
+            const differenceWidth = (mamaAge - xiaohongAge) * baseWidth;
+            
+            ageDifferenceElement.style.width = `${differenceWidth}px`;
+            ageDifferenceElement.style.left = `${xiaohongBarWidth}px`;
+            ageDifferenceElement.style.right = 'auto';
+
+            // 添加进度条动画
+            xiaohongBar.classList.add('animate__animated', 'animate__pulse');
+            document.getElementById('mamaBar').classList.add('animate__animated', 'animate__pulse');
+            ageDifferenceElement.classList.add('animate__animated', 'animate__pulse');
+            
+            setTimeout(() => {
+                xiaohongBar.classList.remove('animate__animated', 'animate__pulse');
+                document.getElementById('mamaBar').classList.remove('animate__animated', 'animate__pulse');
+                ageDifferenceElement.classList.remove('animate__animated', 'animate__pulse');
+            }, 600);
+
+            // 检查是否达到目标倍数
+            if (Math.abs(ratio - TARGET_RATIO) < 0.05) {
+                ratioIndicator.classList.add('highlight', 'animate__animated', 'animate__bounce', 'animate__infinite');
+                xiaohongAgeElement.classList.add('highlight', 'animate__animated', 'animate__bounce', 'animate__infinite');
+                mamaAgeElement.classList.add('highlight', 'animate__animated', 'animate__bounce', 'animate__infinite');
+                return true;
+            } else {
+                ratioIndicator.classList.remove('highlight', 'animate__animated', 'animate__bounce', 'animate__infinite');
+                xiaohongAgeElement.classList.remove('highlight', 'animate__animated', 'animate__bounce', 'animate__infinite');
+                mamaAgeElement.classList.remove('highlight', 'animate__animated', 'animate__bounce', 'animate__infinite');
+            }
+            
+            return false;
+        }
+
+        // 开始动画函数
+        async function startAnimation() {
+            if (isAnimating) return;
+
+            isAnimating = true;
+            const startBtn = document.getElementById('startBtn');
+            const stepBtn = document.getElementById('stepBtn');
+            startBtn.disabled = true;
+            startBtn.textContent = '演示中...';
+            startBtn.classList.remove('animate__pulse', 'animate__infinite');
+            stepBtn.disabled = true;
+
+            // 重置到初始状态
+            currentYear = 0;
+            updateDisplay();
+            updateStatus('🚀 开始演示年龄变化过程...');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // 逐年增加，直到找到答案
+            animationInterval = setInterval(() => {
+                currentYear++;
+                const foundAnswer = updateDisplay();
+
+                updateStatus(`⏰ ${currentYear}年后：小红${XIAOHONG_INITIAL_AGE + currentYear}岁，妈妈${MAMA_INITIAL_AGE + currentYear}岁`);
+
+                if (foundAnswer) {
+                    clearInterval(animationInterval);
+                    setTimeout(() => {
+                        updateStatus(`🎉 找到答案！${currentYear}年后妈妈的年龄正好是小红的3倍！`);
+                        isAnimating = false;
+                        startBtn.disabled = false;
+                        startBtn.textContent = '开始演示';
+                        startBtn.classList.add('animate__pulse', 'animate__infinite');
+                        stepBtn.disabled = false;
+                        
+                        // 庆祝动画
+                        document.getElementById('yearIndicator').classList.add('animate__animated', 'animate__tada');
+                        document.getElementById('xiaohong').classList.add('animate__animated', 'animate__bounce');
+                        document.getElementById('mama').classList.add('animate__animated', 'animate__bounce');
+                    }, 1000);
+                }
+
+                if (currentYear > 20) {
+                    clearInterval(animationInterval);
+                    updateStatus('演示结束');
+                    isAnimating = false;
+                    startBtn.disabled = false;
+                    startBtn.textContent = '开始演示';
+                    startBtn.classList.add('animate__pulse', 'animate__infinite');
+                    stepBtn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        // 手动步进函数
+        function stepForward() {
+            if (isAnimating) return;
+            
+            const xiaohongAge = XIAOHONG_INITIAL_AGE + currentYear;
+            const mamaAge = MAMA_INITIAL_AGE + currentYear;
+            const ratio = mamaAge / xiaohongAge;
+            
+            if (Math.abs(ratio - TARGET_RATIO) < 0.05) {
+                updateStatus(`✅ 已找到答案！${currentYear}年后，妈妈${mamaAge}岁是小红${xiaohongAge}岁的${TARGET_RATIO}倍`);
+                return;
+            }
+            
+            currentYear++;
+            const foundAnswer = updateDisplay();
+            
+            const newXiaohongAge = XIAOHONG_INITIAL_AGE + currentYear;
+            const newMamaAge = MAMA_INITIAL_AGE + currentYear;
+            
+            updateStatus(`📈 ${currentYear}年后：小红${newXiaohongAge}岁，妈妈${newMamaAge}岁`);
+            
+            // 添加步进动画效果
+            const stepBtn = document.getElementById('stepBtn');
+            stepBtn.classList.add('animate__animated', 'animate__pulse');
+            setTimeout(() => {
+                stepBtn.classList.remove('animate__animated', 'animate__pulse');
+            }, 600);
+            
+            if (foundAnswer) {
+                updateStatus(`🎉 找到答案！${currentYear}年后妈妈的年龄正好是小红的3倍！`);
+                // 庆祝动画
+                document.getElementById('yearIndicator').classList.add('animate__animated', 'animate__tada');
+                document.getElementById('xiaohong').classList.add('animate__animated', 'animate__bounce');
+                document.getElementById('mama').classList.add('animate__animated', 'animate__bounce');
+            }
+        }
+
+        // 重置动画函数
+        function resetAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+
+            isAnimating = false;
+            currentYear = 0;
+            
+            updateDisplay();
+            updateStatus('🎯 点击"开始演示"查看自动演示，"+1"手动增加一年，"巧妙计算法"查看计算步骤，"原理演示"理解计算原理');
+
+            // 重置按钮状态
+            const startBtn = document.getElementById('startBtn');
+            const stepBtn = document.getElementById('stepBtn');
+            const calcBtn = document.getElementById('calcBtn');
+            const principleBtn = document.getElementById('principleBtn');
+            startBtn.disabled = false;
+            startBtn.textContent = '开始演示';
+            startBtn.classList.add('animate__pulse', 'animate__infinite');
+            stepBtn.disabled = false;
+            calcBtn.disabled = false;
+            calcBtn.textContent = '巧妙计算法';
+            principleBtn.disabled = false;
+
+            // 隐藏计算演示
+            document.getElementById('calculationDemo').classList.remove('show');
+
+            // 移除高亮效果
+            document.querySelectorAll('.highlight').forEach(el => {
+                el.classList.remove('highlight', 'animate__bounce', 'animate__infinite');
+            });
+            document.querySelectorAll('.animate__animated').forEach(el => {
+                el.classList.remove('animate__animated', 'animate__tada', 'animate__bounce');
+            });
+        }
+
+        // 显示计算演示
+        async function showCalculationDemo() {
+            const demo = document.getElementById('calculationDemo');
+            demo.classList.add('show');
+            
+            const steps = ['step1', 'step2', 'step3'];
+            
+            for (let i = 0; i < steps.length; i++) {
+                const step = document.getElementById(steps[i]);
+                step.classList.add('highlight', 'animate__animated', 'animate__bounceIn');
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                step.classList.remove('highlight');
+                step.classList.add('completed');
+                step.classList.remove('animate__bounceIn');
+                step.classList.add('animate__fadeIn');
+            }
+            
+            updateStatus('💡 巧妙计算法：利用年龄差恒定的特点，可以快速求解！');
+        }
+
+        // 显示原理演示
+        function showPrincipleDemo() {
+            const overlay = document.getElementById('demoOverlay');
+            overlay.classList.add('show');
+            overlay.classList.add('animate__animated', 'animate__fadeIn');
+            
+            const demo = document.getElementById('principleDemo');
+            demo.classList.add('animate__animated', 'animate__zoomIn');
+            
+            initializePrincipleBlocks();
+            setTimeout(startPrincipleAnimation, 500);
+        }
+
+        // 关闭原理演示
+        function closePrincipleDemo() {
+            const overlay = document.getElementById('demoOverlay');
+            overlay.classList.remove('show', 'animate__fadeIn');
+            overlay.classList.add('animate__fadeOut');
+            
+            setTimeout(() => {
+                overlay.classList.remove('animate__animated', 'animate__fadeOut');
+            }, 300);
+        }
+
+        // 初始化原理演示块
+        function initializePrincipleBlocks() {
+            const container = document.getElementById('ageBlocksContainer');
+            container.innerHTML = `
+                <div class="age-block animate__animated animate__slideInLeft">
+                    <div class="block-label">小红年龄（目标时刻）</div>
+                    <div class="block-stack" id="xiaohongBlocks"></div>
+                </div>
+                <div class="age-block animate__animated animate__slideInRight">
+                    <div class="block-label">妈妈年龄（目标时刻）</div>
+                    <div class="block-stack" id="mamaBlocks"></div>
+                </div>
+            `;
+        }
+
+        // 开始原理动画
+        async function startPrincipleAnimation() {
+            const explanation = document.getElementById('principleExplanation');
+            const xiaohongBlocks = document.getElementById('xiaohongBlocks');
+            const mamaBlocks = document.getElementById('mamaBlocks');
+            
+            // 第一步：显示目标年龄
+            explanation.innerHTML = '🎯 <strong>目标：妈妈年龄 = 3 × 小红年龄</strong>';
+            explanation.classList.add('animate__animated', 'animate__bounceIn');
+            
+            // 生成小红的年龄块（12岁）
+            for (let i = 0; i < 12; i++) {
+                const block = document.createElement('div');
+                block.className = 'block-unit animate__animated animate__bounceIn';
+                block.textContent = '1';
+                block.style.backgroundColor = '#FF69B4';
+                block.style.animationDelay = `${i * 0.1}s`;
+                xiaohongBlocks.appendChild(block);
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // 生成妈妈的年龄块（36岁）
+            for (let i = 0; i < 36; i++) {
+                const block = document.createElement('div');
+                block.className = 'block-unit animate__animated animate__bounceIn';
+                block.textContent = '1';
+                block.style.backgroundColor = i < 12 ? '#FF69B4' : (i < 24 ? '#FFD700' : '#9370DB');
+                block.style.animationDelay = `${i * 0.05}s`;
+                mamaBlocks.appendChild(block);
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            
+            // 第二步：突出显示年龄差
+            explanation.innerHTML = '✨ <strong>关键发现：年龄差24岁 = 2 × 小红年龄12岁</strong>';
+            explanation.classList.add('animate__pulse');
+            
+            // 高亮年龄差部分
+            const mamaBlockUnits = mamaBlocks.querySelectorAll('.block-unit');
+            for (let i = 12; i < 36; i++) {
+                mamaBlockUnits[i].classList.add('animate__animated', 'animate__pulse', 'animate__infinite');
+                mamaBlockUnits[i].style.backgroundColor = '#28a745';
+                mamaBlockUnits[i].style.boxShadow = '0 0 10px #28a745';
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // 第三步：显示计算原理
+            explanation.innerHTML = '🧮 <strong>计算原理：小红年龄 = 年龄差 ÷ (倍数 - 1) = 24 ÷ 2 = 12岁</strong>';
+        }
+
+        // 更新状态信息
+        function updateStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.classList.add('animate__animated', 'animate__slideInUp');
+            setTimeout(() => {
+                status.classList.remove('animate__animated', 'animate__slideInUp');
+            }, 600);
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            resetAnimation();
+            
+            // 添加一些入场动画
+            setTimeout(() => {
+                document.querySelector('.problem-description').classList.add('animate__animated', 'animate__slideInLeft');
+                document.querySelector('.animation-area').classList.add('animate__animated', 'animate__slideInRight');
+                document.querySelector('.controls').classList.add('animate__animated', 'animate__slideInUp');
+                document.querySelector('.status').classList.add('animate__animated', 'animate__slideInUp');
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

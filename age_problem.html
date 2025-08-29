@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年龄问题动画演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #FFB6C1 0%, #87CEEB 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .problem-description {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+
+        .animation-area {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .characters-container {
+            display: flex;
+            gap: 100px;
+            align-items: flex-end;
+            position: relative;
+        }
+
+
+
+        /* 计算演示区域 */
+        .calculation-demo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            min-width: 200px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+        }
+
+        .calculation-demo.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .calculation-step {
+            margin-bottom: 8px;
+            padding: 4px 0;
+            transition: all 0.3s ease;
+        }
+
+        .calculation-step.highlight {
+            background: rgba(255, 235, 59, 0.3);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-weight: bold;
+        }
+
+        .calculation-step.completed {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .step-label {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .step-formula {
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .step-result {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        /* 原理演示区域 */
+        .principle-demo {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.98);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+            z-index: 100;
+        }
+
+        .principle-demo.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .principle-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .age-blocks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .age-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .block-stack {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 2px;
+            max-width: 100%;
+            overflow-x: auto;
+            padding: 5px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+            min-height: 50px;
+        }
+
+        .block-unit {
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: bold;
+            color: white;
+            transition: all 0.5s ease;
+            flex-shrink: 0;
+        }
+
+        .xiaohong-block {
+            background: linear-gradient(45deg, #FF69B4, #FFB6C1);
+        }
+
+        .mama-block {
+            background: linear-gradient(45deg, #9370DB, #DDA0DD);
+        }
+
+        .difference-block {
+            background: linear-gradient(45deg, #48C9B0, #52C9A3);
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(72, 201, 176, 0.5); }
+            100% { box-shadow: 0 0 15px rgba(72, 201, 176, 0.8); }
+        }
+
+        .block-label {
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            align-self: flex-start;
+        }
+
+        .principle-explanation {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .demo-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+
+        .demo-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 自定义滚动条样式 */
+        .block-stack::-webkit-scrollbar,
+        .age-blocks-container::-webkit-scrollbar,
+        .principle-demo::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .block-stack::-webkit-scrollbar-track,
+        .age-blocks-container::-webkit-scrollbar-track,
+        .principle-demo::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .block-stack::-webkit-scrollbar-thumb,
+        .age-blocks-container::-webkit-scrollbar-thumb,
+        .principle-demo::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .block-stack::-webkit-scrollbar-thumb:hover,
+        .age-blocks-container::-webkit-scrollbar-thumb:hover,
+        .principle-demo::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+
+
+        .character {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .character-figure {
+            position: relative;
+            transition: all 0.8s ease;
+        }
+
+        .xiaohong {
+            width: 60px;
+            height: 120px;
+            background: linear-gradient(to bottom, #FFB6C1, #FF69B4);
+            border-radius: 30px 30px 15px 15px;
+            position: relative;
+        }
+
+        .xiaohong::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #FDBCB4;
+            border-radius: 50%;
+            border: 3px solid #8B4513;
+        }
+
+        .xiaohong::after {
+            content: '👧';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+        }
+
+        .mama {
+            width: 80px;
+            height: 160px;
+            background: linear-gradient(to bottom, #DDA0DD, #9370DB);
+            border-radius: 40px 40px 20px 20px;
+            position: relative;
+        }
+
+        .mama::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: #FDBCB4;
+            border-radius: 50%;
+            border: 3px solid #8B4513;
+        }
+
+        .mama::after {
+            content: '👩';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+        }
+
+        .age-label {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            min-width: 80px;
+            transition: all 0.5s ease;
+        }
+
+        .name-label {
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .year-indicator {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+
+        .ratio-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 215, 0, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #8B4513;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            transition: all 0.5s ease;
+            max-width: 200px;
+            text-align: center;
+        }
+
+
+
+        .visual-bars {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-top: 30px;
+        }
+
+        .bar-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .age-bar {
+            height: 25px;
+            border-radius: 12px;
+            transition: width 0.8s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            min-width: 40px;
+            position: relative;
+        }
+
+        .age-bar-difference {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: rgba(72, 201, 176, 0.4);
+            border: 2px solid #48C9B0;
+            border-radius: 4px;
+            transition: all 0.8s ease;
+            z-index: 1;
+            border-left: 3px solid #48C9B0;
+            margin-left: 2px;
+        }
+
+        .age-bar-difference::after {
+            content: '年龄差24岁';
+            position: absolute;
+            left: 50%;
+            top: -22px;
+            transform: translateX(-50%);
+            background: rgba(72, 201, 176, 0.95);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 1px solid #48C9B0;
+        }
+
+        .age-bar-difference::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -8px;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 6px solid #48C9B0;
+            z-index: 3;
+        }
+
+        .xiaohong-bar {
+            background: linear-gradient(to right, #FF69B4, #FFB6C1);
+            min-width: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .mama-bar {
+            background: linear-gradient(to right, #9370DB, #DDA0DD);
+        }
+
+        .bar-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 60px;
+        }
+
+
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            min-width: 50px;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: linear-gradient(45deg, #218838, #1e9d8a);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ecf0f1;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .progress {
+            background: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .progress-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .highlight {
+            background: #FFD700 !important;
+            color: #8B4513 !important;
+            animation: pulse 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        .solution-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+
+        .practice-section {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #6f42c1;
+        }
+
+        .formula-box {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+
+        .calculation-box {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #ffc107;
+            margin: 10px 0;
+        }
+
+        .tips-box {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #17a2b8;
+            margin: 10px 0;
+        }
+
+        .practice-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        details {
+            margin-top: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #6f42c1;
+            padding: 5px 0;
+        }
+
+        .answer-content {
+            margin-top: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👶👩 年龄问题动画演示</h1>
+        
+        <div class="problem-description">
+            <h3>问题描述：</h3>
+            <p>小红今年 <strong>2岁</strong>，妈妈今年 <strong>26岁</strong>，问 <strong>几年后</strong> 妈妈的年龄是小红的 <strong>3倍</strong>？</p>
+        </div>
+
+        <div class="animation-area">
+            <div class="year-indicator" id="yearIndicator">今年（0年后）</div>
+            <div class="ratio-indicator" id="ratioIndicator">年龄倍数：13.0倍</div>
+            
+            <!-- 计算演示区域 -->
+            <div class="calculation-demo" id="calculationDemo">
+                <div class="step-label">💡 巧妙计算法：</div>
+                <div class="calculation-step" id="step1">
+                    <div class="step-label">第1步：计算年龄差</div>
+                    <div class="step-formula">26 - 2 = <span class="step-result">24岁</span></div>
+                </div>
+                <div class="calculation-step" id="step2">
+                    <div class="step-label">第2步：计算目标时小红年龄</div>
+                    <div class="step-formula">24 ÷ (3-1) = <span class="step-result">12岁</span></div>
+                </div>
+                <div class="calculation-step" id="step3">
+                    <div class="step-label">第3步：计算需要的年数</div>
+                    <div class="step-formula">12 - 2 = <span class="step-result">10年</span></div>
+                </div>
+            </div>
+            
+            <div class="characters-container">
+                <div class="character">
+                    <div class="name-label">小红</div>
+                    <div class="character-figure xiaohong" id="xiaohong"></div>
+                    <div class="age-label" id="xiaohongAge">2岁</div>
+                </div>
+                
+                <div class="character">
+                    <div class="name-label">妈妈</div>
+                    <div class="character-figure mama" id="mama"></div>
+                    <div class="age-label" id="mamaAge">26岁</div>
+                </div>
+            </div>
+
+            <!-- 年龄可视化条形图 -->
+            <div class="visual-bars">
+                <div class="bar-container">
+                    <div class="bar-label">小红:</div>
+                    <div class="age-bar xiaohong-bar" id="xiaohongBar" style="width: 16px;">
+                        2
+                        <div class="age-bar-difference" id="ageDifference" style="width: 192px; left: 16px;"></div>
+                    </div>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-label">妈妈:</div>
+                    <div class="age-bar mama-bar" id="mamaBar" style="width: 208px;">26</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="startAnimation()" id="startBtn">开始演示</button>
+            <button class="btn btn-success" onclick="stepForward()" id="stepBtn" disabled>+1</button>
+            <button class="btn btn-primary" onclick="showCalculationDemo()" id="calcBtn" style="background: linear-gradient(45deg, #9C27B0, #673AB7);">巧妙计算法</button>
+            <button class="btn btn-primary" onclick="showPrincipleDemo()" id="principleBtn" style="background: linear-gradient(45deg, #4CAF50, #45a049);">原理演示</button>
+            <button class="btn btn-secondary" onclick="resetAnimation()">重置</button>
+        </div>
+
+        <!-- 原理演示遮罩层 -->
+        <div class="demo-overlay" id="demoOverlay" onclick="closePrincipleDemo()"></div>
+        
+        <!-- 原理演示区域 -->
+        <div class="principle-demo" id="principleDemo">
+            <button class="close-btn" onclick="closePrincipleDemo()">×</button>
+            <div class="principle-title">🧠 巧妙计算法的原理</div>
+            
+            <div class="age-blocks-container">
+                <div class="age-block">
+                    <div class="block-label">小红 (2岁)</div>
+                    <div class="block-stack" id="xiaohongStack">
+                        <!-- 小红的年龄块 -->
+                    </div>
+                </div>
+                
+                <div class="age-block">
+                    <div class="block-label">妈妈 (26岁)</div>
+                    <div class="block-stack" id="mamaStack">
+                        <!-- 妈妈的年龄块 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="principle-explanation" id="principleText">
+                点击开始，观看原理演示...
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-primary" onclick="startPrincipleAnimation()" id="startPrincipleBtn" style="background: linear-gradient(45deg, #4CAF50, #45a049);">开始原理演示</button>
+            </div>
+        </div>
+
+        <div class="status" id="status">
+            点击"开始演示"查看年龄变化过程，"巧妙计算法"查看计算步骤，"原理演示"理解计算原理
+        </div>
+
+        <div class="progress" id="progress">
+            <div class="progress-item">
+                <span>经过年数：</span>
+                <span id="yearsLater">0年</span>
+            </div>
+            <div class="progress-item">
+                <span>小红年龄：</span>
+                <span id="xiaohongCurrentAge">2岁</span>
+            </div>
+            <div class="progress-item">
+                <span>妈妈年龄：</span>
+                <span id="mamaCurrentAge">26岁</span>
+            </div>
+            <div class="progress-item">
+                <span>年龄倍数：</span>
+                <span id="ageRatio">13.0倍</span>
+            </div>
+
+        </div>
+
+        <div class="solution-section">
+            <h3 style="color: #28a745; margin-bottom: 15px;">📚 解题思路与计算方法</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">🔍 关键理解点：</h4>
+                <ul style="margin-left: 20px; line-height: 1.6;">
+                    <li><strong>年龄差恒定</strong>：无论过多少年，两人的年龄差始终不变（26-2=24岁）</li>
+                    <li><strong style="color: #F39C12;">倍数关系变化</strong>：随着时间推移，年龄倍数会逐渐减小</li>
+                    <li><strong>目标条件</strong>：当妈妈年龄是小红的3倍时，建立等式关系</li>
+                    <li><strong>未知数设定</strong>：设x年后，建立关于x的方程</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">📐 通用解题步骤：</h4>
+                <div class="formula-box">
+                    <p><strong>设：</strong>x年后，妈妈的年龄是小红的n倍</p>
+                    <p><strong>列方程：</strong>(妈妈现在年龄 + x) = n × (小红现在年龄 + x)</p>
+                    <p><strong>解方程：</strong>求出x的值</p>
+                    <p><strong>验证：</strong>代入检验答案是否正确</p>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">💡 本题计算过程：</h4>
+                
+                <div class="calculation-box" style="margin-bottom: 15px;">
+                    <p><strong>方法一：传统方程法</strong></p>
+                    <p><strong>设：</strong>x年后，妈妈的年龄是小红的3倍</p>
+                    <p><strong>列方程：</strong>26 + x = 3 × (2 + x)</p>
+                    <p><strong>展开：</strong>26 + x = 6 + 3x</p>
+                    <p><strong>移项：</strong>26 - 6 = 3x - x</p>
+                    <p><strong>化简：</strong>20 = 2x</p>
+                    <p><strong>求解：</strong>x = 10</p>
+                </div>
+
+                <div class="calculation-box" style="background: #f0f8ff; border-left: 3px solid #9C27B0;">
+                    <p><strong style="color: #9C27B0;">方法二：巧妙计算法 ⭐</strong></p>
+                    <p><strong>第1步：</strong>年龄差 = 26 - 2 = 24岁（恒定不变）</p>
+                    <p><strong>第2步：</strong>目标时小红年龄 = 24 ÷ (3-1) = 12岁</p>
+                    <p><strong>第3步：</strong>需要年数 = 12 - 2 = 10年</p>
+                    <p style="color: #9C27B0; font-size: 12px; font-style: italic;">💡 原理：当倍数为n时，较小数 = 年龄差 ÷ (n-1)</p>
+                </div>
+
+                <div style="background: #e8f5e8; padding: 10px; border-radius: 8px; margin-top: 10px;">
+                    <p><strong>验证：</strong></p>
+                    <p>• 10年后小红：2 + 10 = 12岁</p>
+                    <p>• 10年后妈妈：26 + 10 = 36岁</p>
+                    <p>• 倍数关系：36 ÷ 12 = 3倍 ✓</p>
+                    <p style="color: #28a745; font-weight: bold;">答案：10年后</p>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="color: #2c3e50; margin-bottom: 10px;">🎯 解题要点总结：</h4>
+                <div class="tips-box">
+                    <ol style="margin-left: 20px; line-height: 1.6;">
+                        <li><strong>理解不变量</strong>：年龄差永远不变</li>
+                        <li><strong>设定未知数</strong>：通常设"几年后"为x</li>
+                        <li><strong>建立等式</strong>：根据倍数关系列方程</li>
+                        <li><strong>解方程技巧</strong>：注意移项和合并同类项</li>
+                        <li><strong>验证答案</strong>：代入原题检查是否正确</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="practice-section">
+            <h3 style="color: #6f42c1; margin-bottom: 15px;">🧮 举一反三 - 变式练习</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div class="practice-item">
+                    <h5 style="color: #6f42c1; margin-bottom: 10px;">练习1</h5>
+                    <p style="font-size: 14px; margin-bottom: 8px;">爸爸今年35岁，儿子今年5岁，几年后爸爸的年龄是儿子的4倍？</p>
+                    <details>
+                        <summary>点击查看答案</summary>
+                        <div class="answer-content">
+                            <p>设x年后：35 + x = 4 × (5 + x)</p>
+                            <p>35 + x = 20 + 4x</p>
+                            <p>35 - 20 = 4x - x</p>
+                            <p>15 = 3x，所以 x = 5</p>
+                            <p><strong>答案：5年后</strong></p>
+                        </div>
+                    </details>
+                </div>
+                
+                <div class="practice-item">
+                    <h5 style="color: #6f42c1; margin-bottom: 10px;">练习2</h5>
+                    <p style="font-size: 14px; margin-bottom: 8px;">姐姐今年15岁，妹妹今年3岁，几年前姐姐的年龄是妹妹的5倍？</p>
+                    <details>
+                        <summary>点击查看答案</summary>
+                        <div class="answer-content">
+                            <p>设x年前：15 - x = 5 × (3 - x)</p>
+                            <p>15 - x = 15 - 5x</p>
+                            <p>-x + 5x = 15 - 15</p>
+                            <p>4x = 0，所以 x = 0</p>
+                            <p><strong>答案：今年（0年前）</strong></p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div style="background: #e6f3ff; padding: 15px; border-radius: 8px; border-left: 3px solid #007bff;">
+                <h5 style="color: #007bff; margin-bottom: 10px;">🤔 思考题：特殊情况</h5>
+                <p style="margin-bottom: 10px;"><strong>情况1：</strong>如果题目问"几年前"而不是"几年后"，如何处理？</p>
+                <p style="margin-bottom: 10px;"><strong>情况2：</strong>如果计算结果是负数或小数，说明什么？</p>
+                <details>
+                    <summary style="color: #007bff;">点击查看分析</summary>
+                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 4px;">
+                        <p><strong>情况1：</strong>"几年前"就用减法，设x年前，年龄表示为(现在年龄-x)</p>
+                        <p><strong>情况2：</strong>负数表示应该是"几年前"而不是"几年后"；小数说明没有整数解</p>
+                        <p style="color: #6c757d; font-style: italic;">年龄问题要注意时间方向和答案的合理性！</p>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentYear = 0;
+        let isAnimating = false;
+        let animationInterval;
+
+        const XIAOHONG_INITIAL_AGE = 2;
+        const MAMA_INITIAL_AGE = 26;
+        const TARGET_RATIO = 3;
+
+        function updateDisplay() {
+            const xiaohongAge = XIAOHONG_INITIAL_AGE + currentYear;
+            const mamaAge = MAMA_INITIAL_AGE + currentYear;
+            const ratio = mamaAge / xiaohongAge;
+            // 更新年份指示器
+            document.getElementById('yearIndicator').textContent = 
+                currentYear === 0 ? '今年（0年后）' : `${currentYear}年后`;
+
+            // 更新年龄显示
+            document.getElementById('xiaohongAge').textContent = `${xiaohongAge}岁`;
+            document.getElementById('mamaAge').textContent = `${mamaAge}岁`;
+
+            // 更新倍数指示器
+            document.getElementById('ratioIndicator').textContent = 
+                `年龄倍数：${ratio.toFixed(1)}倍`;
+
+            // 更新进度信息
+            document.getElementById('yearsLater').textContent = `${currentYear}年`;
+            document.getElementById('xiaohongCurrentAge').textContent = `${xiaohongAge}岁`;
+            document.getElementById('mamaCurrentAge').textContent = `${mamaAge}岁`;
+            document.getElementById('ageRatio').textContent = `${ratio.toFixed(1)}倍`;
+
+            // 更新人物高度（随年龄增长，保持高度差不变）
+            const xiaohongElement = document.getElementById('xiaohong');
+            const mamaElement = document.getElementById('mama');
+            
+            // 基础高度
+            const xiaohongBaseHeight = 120;
+            const mamaBaseHeight = 160;
+            const initialHeightDifference = mamaBaseHeight - xiaohongBaseHeight; // 40px的高度差
+            
+            // 随年龄同比例增长，保持高度差不变
+            const growthRate = currentYear * 6; // 每年增长6px
+            const xiaohongHeight = xiaohongBaseHeight + growthRate;
+            const mamaHeight = xiaohongHeight + initialHeightDifference; // 始终保持40px的高度差
+            
+            xiaohongElement.style.height = `${xiaohongHeight}px`;
+            mamaElement.style.height = `${mamaHeight}px`;
+
+            // 更新可视化条形图（按实际年龄比例）
+            const baseWidth = 8; // 每岁8px
+            const xiaohongBarWidth = xiaohongAge * baseWidth;
+            const mamaBarWidth = mamaAge * baseWidth;
+            
+            // 更新小红进度条
+            const xiaohongBar = document.getElementById('xiaohongBar');
+            xiaohongBar.style.width = `${xiaohongBarWidth}px`;
+            // 找到文本节点并更新年龄文字
+            for (let node of xiaohongBar.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                    node.textContent = xiaohongAge;
+                    break;
+                }
+            }
+            
+            // 更新妈妈进度条
+            document.getElementById('mamaBar').style.width = `${mamaBarWidth}px`;
+            document.getElementById('mamaBar').textContent = mamaAge;
+            
+            // 年龄差标识显示在小红进度条右侧（紧挨着，不重叠）
+            const ageDifferenceElement = document.getElementById('ageDifference');
+            const differenceWidth = (mamaAge - xiaohongAge) * baseWidth; // 年龄差对应的宽度（24岁）
+            
+            ageDifferenceElement.style.width = `${differenceWidth}px`;
+            ageDifferenceElement.style.left = `${xiaohongBarWidth}px`; // 从小红进度条结束处开始，CSS中有margin-left处理间距
+            ageDifferenceElement.style.right = 'auto';
+
+            // 检查是否达到目标倍数
+            if (Math.abs(ratio - TARGET_RATIO) < 0.05) {
+                document.getElementById('ratioIndicator').classList.add('highlight');
+                document.getElementById('xiaohongAge').classList.add('highlight');
+                document.getElementById('mamaAge').classList.add('highlight');
+                return true;
+            } else {
+                document.getElementById('ratioIndicator').classList.remove('highlight');
+                document.getElementById('xiaohongAge').classList.remove('highlight');
+                document.getElementById('mamaAge').classList.remove('highlight');
+                return false;
+            }
+        }
+
+
+
+
+
+        async function showCalculationDemo() {
+            const calcDemo = document.getElementById('calculationDemo');
+            const calcBtn = document.getElementById('calcBtn');
+            
+            // 禁用按钮
+            calcBtn.disabled = true;
+            calcBtn.textContent = '演示中...';
+            
+            // 显示计算区域
+            calcDemo.classList.add('show');
+            updateStatus('展示巧妙的计算方法...');
+            
+            // 重置所有步骤
+            document.querySelectorAll('.calculation-step').forEach(step => {
+                step.classList.remove('highlight', 'completed');
+            });
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 第1步：年龄差
+            document.getElementById('step1').classList.add('highlight');
+            updateStatus('第1步：计算年龄差 = 26 - 2 = 24岁（这个差值永远不变）');
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            document.getElementById('step1').classList.remove('highlight');
+            document.getElementById('step1').classList.add('completed');
+            
+            // 第2步：目标年龄
+            document.getElementById('step2').classList.add('highlight');
+            updateStatus('第2步：当倍数为3时，小红年龄 = 24 ÷ (3-1) = 12岁');
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            document.getElementById('step2').classList.remove('highlight');
+            document.getElementById('step2').classList.add('completed');
+            
+            // 第3步：需要年数
+            document.getElementById('step3').classList.add('highlight');
+            updateStatus('第3步：需要年数 = 12 - 2 = 10年后');
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            document.getElementById('step3').classList.remove('highlight');
+            document.getElementById('step3').classList.add('completed');
+            
+            // 验证结果
+            updateStatus('🎉 验证：10年后小红12岁，妈妈36岁，36÷12=3倍！');
+            
+            // 恢复按钮
+            calcBtn.disabled = false;
+            calcBtn.textContent = '巧妙计算法';
+        }
+
+        function showPrincipleDemo() {
+            document.getElementById('demoOverlay').classList.add('show');
+            document.getElementById('principleDemo').classList.add('show');
+            initializePrincipleBlocks();
+        }
+
+        function closePrincipleDemo() {
+            document.getElementById('demoOverlay').classList.remove('show');
+            document.getElementById('principleDemo').classList.remove('show');
+        }
+
+        function initializePrincipleBlocks() {
+            const xiaohongStack = document.getElementById('xiaohongStack');
+            const mamaStack = document.getElementById('mamaStack');
+            
+            // 清空现有块
+            xiaohongStack.innerHTML = '';
+            mamaStack.innerHTML = '';
+            
+            // 创建小红的年龄块 (2岁)
+            for (let i = 0; i < 2; i++) {
+                const block = document.createElement('div');
+                block.className = 'block-unit xiaohong-block';
+                block.textContent = '1';
+                xiaohongStack.appendChild(block);
+            }
+            
+            // 创建妈妈的年龄块 (26岁)
+            for (let i = 0; i < 26; i++) {
+                const block = document.createElement('div');
+                block.className = 'block-unit mama-block';
+                block.textContent = '1';
+                mamaStack.appendChild(block);
+            }
+        }
+
+        async function startPrincipleAnimation() {
+            const startBtn = document.getElementById('startPrincipleBtn');
+            const principleText = document.getElementById('principleText');
+            
+            startBtn.disabled = true;
+            startBtn.textContent = '演示中...';
+            
+            // 第1步：显示现状
+            principleText.innerHTML = '现在：小红2岁，妈妈26岁。妈妈比小红大24岁（年龄差）';
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // 第2步：高亮年龄差
+            principleText.innerHTML = '关键洞察：年龄差永远不变！无论过多少年都是24岁';
+            highlightAgeDifference();
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // 第3步：展示目标状态
+            principleText.innerHTML = '目标：妈妈年龄 = 3 × 小红年龄';
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // 第4步：分析倍数关系
+            principleText.innerHTML = '如果小红有X岁，妈妈就有3X岁<br>年龄差 = 3X - X = 2X = 24岁';
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // 第5步：得出结论
+            principleText.innerHTML = '所以：X = 24 ÷ 2 = 12岁<br>小红需要达到12岁，还需要 12 - 2 = 10年';
+            showTargetState();
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            // 第6步：验证
+            principleText.innerHTML = '🎉 验证：10年后小红12岁，妈妈36岁<br>36 ÷ 12 = 3倍 ✓';
+            
+            startBtn.disabled = false;
+            startBtn.textContent = '重新演示';
+        }
+
+        function highlightAgeDifference() {
+            const mamaBlocks = document.querySelectorAll('#mamaStack .block-unit');
+            const xiaohongBlocks = document.querySelectorAll('#xiaohongStack .block-unit');
+            
+            // 高亮妈妈年龄中超出小红年龄的部分（年龄差）
+            for (let i = xiaohongBlocks.length; i < mamaBlocks.length; i++) {
+                mamaBlocks[i].className = 'block-unit difference-block';
+                mamaBlocks[i].textContent = '差';
+            }
+        }
+
+        function showTargetState() {
+            const xiaohongStack = document.getElementById('xiaohongStack');
+            const mamaStack = document.getElementById('mamaStack');
+            
+            // 清空并重建目标状态
+            xiaohongStack.innerHTML = '';
+            mamaStack.innerHTML = '';
+            
+            // 小红12岁
+            for (let i = 0; i < 12; i++) {
+                const block = document.createElement('div');
+                block.className = 'block-unit xiaohong-block';
+                block.textContent = '1';
+                xiaohongStack.appendChild(block);
+            }
+            
+            // 妈妈36岁 (3倍关系)
+            for (let i = 0; i < 36; i++) {
+                const block = document.createElement('div');
+                if (i < 12) {
+                    block.className = 'block-unit xiaohong-block';
+                    block.textContent = '1倍';
+                } else if (i < 24) {
+                    block.className = 'block-unit xiaohong-block';
+                    block.textContent = '2倍';
+                } else if (i < 36) {
+                    block.className = 'block-unit xiaohong-block';
+                    block.textContent = '3倍';
+                }
+                mamaStack.appendChild(block);
+            }
+            
+            // 更新标签
+            document.querySelector('#xiaohongStack').previousElementSibling.textContent = '小红 (12岁)';
+            document.querySelector('#mamaStack').previousElementSibling.textContent = '妈妈 (36岁) = 3×12';
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        async function startAnimation() {
+            if (isAnimating) return;
+
+            isAnimating = true;
+            const startBtn = document.getElementById('startBtn');
+            const stepBtn = document.getElementById('stepBtn');
+            startBtn.disabled = true;
+            startBtn.textContent = '演示中...';
+            stepBtn.disabled = true;
+
+            // 重置到初始状态
+            currentYear = 0;
+            updateDisplay();
+            updateStatus('开始演示年龄变化过程...');
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // 逐年增加，直到找到答案
+            animationInterval = setInterval(() => {
+                currentYear++;
+                const foundAnswer = updateDisplay();
+
+                updateStatus(`${currentYear}年后：小红${XIAOHONG_INITIAL_AGE + currentYear}岁，妈妈${MAMA_INITIAL_AGE + currentYear}岁`);
+
+                if (foundAnswer) {
+                    clearInterval(animationInterval);
+                    setTimeout(() => {
+                        updateStatus(`🎉 找到答案！${currentYear}年后妈妈的年龄正好是小红的3倍！`);
+                        isAnimating = false;
+                        startBtn.disabled = false;
+                        startBtn.textContent = '开始演示';
+                        stepBtn.disabled = false;
+                    }, 1000);
+                }
+
+                // 防止无限循环
+                if (currentYear > 20) {
+                    clearInterval(animationInterval);
+                    updateStatus('演示结束');
+                    isAnimating = false;
+                    startBtn.disabled = false;
+                    startBtn.textContent = '开始演示';
+                    stepBtn.disabled = false;
+                }
+            }, 800);
+        }
+
+        function stepForward() {
+            if (isAnimating) return; // 自动演示时不允许手动步进
+            
+            const xiaohongAge = XIAOHONG_INITIAL_AGE + currentYear;
+            const mamaAge = MAMA_INITIAL_AGE + currentYear;
+            const ratio = mamaAge / xiaohongAge;
+            
+            // 检查是否已经达到目标
+            if (Math.abs(ratio - TARGET_RATIO) < 0.05) {
+                updateStatus(`已找到答案！${currentYear}年后，妈妈${mamaAge}岁是小红${xiaohongAge}岁的${TARGET_RATIO}倍`);
+                return;
+            }
+            
+            currentYear++;
+            const foundAnswer = updateDisplay();
+            
+            const newXiaohongAge = XIAOHONG_INITIAL_AGE + currentYear;
+            const newMamaAge = MAMA_INITIAL_AGE + currentYear;
+            
+            updateStatus(`${currentYear}年后：小红${newXiaohongAge}岁，妈妈${newMamaAge}岁`);
+            
+            // 检查是否达到目标倍数
+            if (foundAnswer) {
+                updateStatus(`🎉 找到答案！${currentYear}年后妈妈的年龄正好是小红的3倍！`);
+            }
+        }
+
+        function resetAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+
+            isAnimating = false;
+            currentYear = 0;
+            
+            updateDisplay();
+            updateStatus('点击"开始演示"查看自动演示，"+1"手动增加一年，"巧妙计算法"查看计算步骤，"原理演示"理解计算原理');
+
+            // 重置按钮状态
+            const startBtn = document.getElementById('startBtn');
+            const stepBtn = document.getElementById('stepBtn');
+            const calcBtn = document.getElementById('calcBtn');
+            const principleBtn = document.getElementById('principleBtn');
+            startBtn.disabled = false;
+            startBtn.textContent = '开始演示';
+            stepBtn.disabled = false;
+            calcBtn.disabled = false;
+            calcBtn.textContent = '巧妙计算法';
+            principleBtn.disabled = false;
+
+            // 隐藏计算演示
+            document.getElementById('calculationDemo').classList.remove('show');
+
+            // 移除高亮效果
+            document.querySelectorAll('.highlight').forEach(el => {
+                el.classList.remove('highlight');
+            });
+            document.querySelectorAll('.completed').forEach(el => {
+                el.classList.remove('completed');
+            });
+        }
+
+        // 初始化
+        window.addEventListener('load', () => {
+            resetAnimation();
+        });
+    </script>
+</body>
+</html> 
