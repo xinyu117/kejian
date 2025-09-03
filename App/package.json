@@ -1,0 +1,33 @@
+{
+  "name": "education-courseware-app",
+  "version": "1.0.0",
+  "description": "教育课件浏览、搜索、上传Web应用",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["fastify", "education", "courseware"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fastify": "^4.24.3",
+    "@fastify/static": "^6.12.0",
+    "@fastify/view": "^8.2.0",
+    "@fastify/formbody": "^7.4.0",
+    "@fastify/session": "^10.7.0",
+    "@fastify/cookie": "^9.2.0",
+    "@fastify/multipart": "^8.0.0",
+    "ejs": "^3.1.9",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.6",
+    "uuid": "^9.0.1",
+    "axios": "^1.6.2",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+} 

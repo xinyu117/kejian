@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - 教育课件平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/public/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container-fluid h-100">
+    <div class="row h-100 justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-md-8 col-lg-6 col-xl-4">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-plus text-primary" style="font-size: 3rem;"></i>
+                        <h3 class="mt-3">用户注册</h3>
+                        <p class="text-muted">创建您的学习账户</p>
+                    </div>
+
+                    <form id="registerForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">用户名</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                            <div class="form-text">用户名将用于登录，请选择易记的名称</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">邮箱地址</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                            <div class="form-text">邮箱用于找回密码（可选）</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">密码</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <div class="form-text">密码至少6位字符</div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="form-label">确认密码</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-user-plus me-2"></i>注册账户
+                        </button>
+                    </form>
+
+                    <hr>
+
+                    <div class="text-center">
+                        <p class="mb-0">已有账户？ <a href="/login" class="text-decoration-none">立即登录</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+
+    // 验证密码
+    if (password !== confirmPassword) {
+        alert('两次输入的密码不一致');
+        return;
+    }
+
+    if (password.length < 6) {
+        alert('密码至少需要6位字符');
+        return;
+    }
+
+    const registerData = {
+        username: formData.get('username'),
+        email: formData.get('email'),
+        password: password
+    };
+
+    fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(registerData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('注册成功！即将跳转到首页...');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        } else {
+            alert('注册失败: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('注册错误:', error);
+        alert('注册失败，请稍后重试');
+    });
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

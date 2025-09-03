@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - 教育课件平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/public/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-graduation-cap me-2"></i>教育课件平台
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/upload">上传课件</a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i><%= user.username %>
+                                <% if (user.is_premium) { %>
+                                    <span class="badge bg-warning ms-1">VIP</span>
+                                <% } %>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <% if (!user.is_premium) { %>
+                                    <li><a class="dropdown-item" href="/upgrade">
+                                        <i class="fas fa-crown me-2"></i>升级VIP
+                                    </a></li>
+                                <% } %>
+                                <li><a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                                </a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">登录</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">注册</a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+<div class="hero-section bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold">欢迎来到教育课件平台</h1>
+                <p class="lead">探索丰富的教学资源，提升学习体验</p>
+            </div>
+            <div class="col-lg-4">
+                <div class="search-box">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="搜索课件...">
+                        <button class="btn btn-light" type="button" onclick="searchCoursewares()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 分类过滤 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-primary active" onclick="filterByCategory('')">全部</button>
+                <button class="btn btn-outline-primary" onclick="filterByCategory('数学')">数学</button>
+                <button class="btn btn-outline-primary" onclick="filterByCategory('语文')">语文</button>
+                <button class="btn btn-outline-primary" onclick="filterByCategory('英语')">英语</button>
+                <button class="btn btn-outline-primary" onclick="filterByCategory('科学')">科学</button>
+                <button class="btn btn-outline-primary" onclick="filterByCategory('历史')">历史</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户状态提示 -->
+    <% if (user && !user.is_premium) { %>
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            您当前是普通用户，只能查看免费课件。
+            <a href="/upgrade" class="alert-link">升级到VIP</a> 以解锁全部课件。
+        </div>
+    <% } %>
+
+    <!-- 课件列表 -->
+    <div class="row" id="coursewareList">
+        <% coursewares.forEach(function(courseware) { %>
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4 courseware-item" data-category="<%= courseware.category %>">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-img-top bg-gradient position-relative" style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <% if (!courseware.is_free) { %>
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-crown me-1"></i>¥<%= courseware.price %>
+                                </span>
+                            <% } else { %>
+                                <span class="badge bg-success">
+                                    <i class="fas fa-gift me-1"></i>免费
+                                </span>
+                            <% } %>
+                        </div>
+                        <div class="position-absolute bottom-0 start-0 m-3">
+                            <span class="badge bg-dark"><%= courseware.category %></span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <i class="fas fa-book-open text-white" style="font-size: 3rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title"><%= courseware.title %></h5>
+                        <p class="card-text text-muted"><%= courseware.description %></p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <% if (courseware.is_free || (user && user.is_premium)) { %>
+                            <a href="/courseware/<%= courseware.id %>" class="btn btn-primary w-100">
+                                <i class="fas fa-play me-2"></i>开始学习
+                            </a>
+                        <% } else { %>
+                            <button class="btn btn-warning w-100" onclick="showPaymentModal('<%= courseware.id %>', '<%= courseware.title %>', <%= courseware.price %>)">
+                                <i class="fas fa-lock me-2"></i>立即解锁 ¥<%= courseware.price %>
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</div>
+
+<!-- 支付模态框 -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">升级VIP解锁全部课件</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-crown text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h4>升级VIP用户</h4>
+                <p class="text-muted">一次性付费，永久享受所有课件</p>
+                <div class="price-display mb-4">
+                    <span class="h2 text-primary">¥99</span>
+                </div>
+                <div id="qrCodeContainer" style="display: none;">
+                    <p>请使用微信扫码支付：</p>
+                    <img id="paymentQR" src="" alt="支付二维码" class="img-fluid mb-3" style="max-width: 200px;">
+                </div>
+                <button class="btn btn-primary" onclick="createPayment()">生成支付二维码</button>
+                <hr>
+                <p class="small text-muted">测试环境，您也可以：</p>
+                <button class="btn btn-success btn-sm" onclick="simulatePayment()">模拟支付成功</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPaymentId = null;
+
+function filterByCategory(category) {
+    // 更新按钮状态
+    document.querySelectorAll('.btn-outline-primary').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    // 过滤课件
+    const items = document.querySelectorAll('.courseware-item');
+    items.forEach(item => {
+        if (category === '' || item.dataset.category === category) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function searchCoursewares() {
+    const keyword = document.getElementById('searchInput').value;
+    
+    fetch(`/api/courseware/search?q=${encodeURIComponent(keyword)}`)
+        .then(response => response.json())
+        .then(data => {
+            // 重新渲染课件列表
+            renderCoursewares(data.coursewares);
+        })
+        .catch(error => {
+            console.error('搜索失败:', error);
+        });
+}
+
+function showPaymentModal(coursewareId, title, price) {
+    const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    modal.show();
+}
+
+function createPayment() {
+    fetch('/api/payment/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ amount: 99 })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentPaymentId = data.paymentId;
+            document.getElementById('paymentQR').src = data.qrCode;
+            document.getElementById('qrCodeContainer').style.display = 'block';
+        } else {
+            alert('生成支付二维码失败');
+        }
+    })
+    .catch(error => {
+        console.error('创建支付失败:', error);
+    });
+}
+
+function simulatePayment() {
+    fetch('/api/payment/simulate-success', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('支付成功！页面即将刷新...');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            alert('支付失败: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('模拟支付失败:', error);
+    });
+}
+
+// 搜索框回车事件
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchCoursewares();
+    }
+});
+
+function logout() {
+    fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '/login';
+        }
+    })
+    .catch(error => {
+        console.error('退出登录失败:', error);
+    });
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/public/js/app.js"></script>
+
+<footer class="bg-light text-center py-4 mt-5">
+    <div class="container">
+        <p class="mb-0">&copy; 2024 教育课件平台. 保留所有权利.</p>
+    </div>
+</footer>
+
+</body>
+</html> 
